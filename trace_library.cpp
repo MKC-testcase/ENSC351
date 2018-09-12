@@ -1,43 +1,46 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-char filePname[64]; //this will set aside 64 characters for the filename to be set
+
+using namespace std;
+
+string filePname; //this will set aside 64 characters for the filename to be set
 ofstream fileoutput;
 
 void trace_start(char* filename)
 {
+    string filetemp;
 	filePname = filename;	// this is assuming that the filename is actually comes in all at once
-	string file = filePname;
-	file = file+".txt";
-	fileoutput.open(file); //replace the example with actual filename
+	filetemp = filePname+".txt";
+	fileoutput.open(filetemp); //replace the example with actual filename
 	// may want to check if file is empty and, empty if there is anything in file
 	if (fileoutput.fail())
 	{
-		fileoutput<< "[ ";
-		myfile.close();
+		fileoutput<< "[";
+		fileoutput.close();
 	}
 	else 
 	{
-		cout<< "Unable to open file"
-		myfile.close();
+		cout<< "Unable to open file";
+		fileoutput.close();
 	}
 }
 
 
 void trace_end()
 {
-	string file = filePname;
-	file = file + ".txt";
-	fileoutput.open(file, std::ios_base::app);
+    string filetemp;
+	filetemp = filePname + ".txt";
+	fileoutput.open(filetemp, std::ios_base::app);
 	if (fileoutput.fail())
 	{
 		fileoutput<< "]";
-		myfile.close();
+		fileoutput.close();
 	}
 	else 
 	{
-		cout<< "Unable to open file"
-		myfile.close();
+		cout<< "Unable to open file";
+		fileoutput.close();
 	}
 }
 
