@@ -7,7 +7,8 @@ using namespace std;
 
 string filePname; //this will set aside 64 characters for the filename to be set
 ofstream fileoutput;
-
+//make sure to include the chrono library to allow the program to tell the computer clock
+//also have to research how to use chrono
 
 struct singleE
 {
@@ -64,26 +65,11 @@ void trace_event_start(char*  name, char* categories, char* arguments)
 
 void trace_event_end(char* arguements)
 {
-	int k = i;
-	while(i != 0)
-	{
-		singleE temp = buffer[i];
-		if (temp.ph == 'E')
-		{
-			i--;
-			continue;
-		}
-		singleE part2;
-    	part2.nameE= temp.nameE;
-    	part2.cat = temp.cat;
+	singleE part2
     	part2.ph = 'E';
-	    part2.pid = temp.pid;
-	    part2.tid = temp.tid;
-	    part2.ts = 5; //will need to retrieve this value from the the computer clock
-	    i = k;
-	    buffer[i] = part2;
-	    i++;
-		break;
-	}
-
+	part2.pid = 1;
+	part2.tid = 1;
+	part2.ts = 5; //will need to retrieve this value from the the computer clock
+	buffer[i] = part2;
+	i++
 }
