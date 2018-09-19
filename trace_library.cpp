@@ -3,10 +3,11 @@
 #include <string>
 #include <stack>
 #include <cstring>
+#include <chrono>
+#include <thread>
 
 using namespace std;
 void printsingleE();
-
 ofstream fileoutput;
 //make sure to include the chrono library to allow the program to tell the computer clock
 //also have to research how to use chrono
@@ -18,7 +19,10 @@ struct singleE
 	string ph;
 	int pid;
 	int tid;
-	int ts;
+	unsigned long long ts;
+	string arg;
+	string key;	// this is for the counter key name
+	string value;	//this is for the counter key value
 };
 
 singleE buffer[10000];
@@ -55,7 +59,8 @@ void trace_event_start(string  name, string categories, string arguments)
 	part.ph = "B";
 	part.pid = 1;
 	part.tid = 1;
-	part.ts = 5; //will need to retrieve this value from the the computer clock
+	part.ts = chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
+	part.arg = arguments
 	buffer[i] = part;
 	i++;
 }
@@ -66,7 +71,8 @@ void trace_event_end(string arguements)
     part2.ph = "E";
 	part2.pid = 1;
 	part2.tid = 1;
-	part2.ts = 5; //will need to retrieve this value from the the computer clock
+	part2.ts = chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
+	part.arg = arguments
 	buffer[i] = part2;
 	i++;
 }
@@ -81,12 +87,12 @@ void printsingleE()
 		{
 			fileoutput<<"{\"name\": \""<<temp.nameE<<"\",\"cat\": \""<<temp.cat<<"\",";
 			fileoutput<<"\"ph\":\""<<temp.ph<<"\", \"pid\":"<<temp.pid<<",";
-			fileoutput<<"\"tid\":"<<temp.tid<<", \"ts\":"<<temp.ts<<"},"<<endl;
+			fileoutput<<"\"tid\":"<<temp.tid<<", \"ts\":"<<temp.ts<<", \"args\":"<<args<<"},"<<endl;
 		}
 		else if(temp.ph == "E")
 		{
 			fileoutput<<"{\"ph\":\""<<temp.ph<<"\", \"pid\":"<<temp.pid<<",";
-			fileoutput<<"\"tid\":"<<temp.tid<<", \"ts\":"<<temp.ts<<"}";
+			fileoutput<<"\"tid\":"<<temp.tid<<", \"ts\":"<<temp.ts<<", \"args\":"<<args<<}";
 			if(k!=i-1)
 			{
 				fileoutput<<",";
@@ -97,10 +103,16 @@ void printsingleE()
 	}
 	i = 0;
 }
+void trace_flush()
+{
+	printsingleE();
+}
+
 int main()
 {
 	trace_start("output.txt");
 	trace_event_start("Hello", "greeting", "bah humbug");
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	trace_event_end("bah humbug");
 	trace_end();
 	return 0;
