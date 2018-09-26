@@ -8,6 +8,7 @@
 
 using namespace std;
 void printsingleE();
+void trace_flush();
 ofstream fileoutput;
 //make sure to include the chrono library to allow the program to tell the computer clock
 //also have to research how to use chrono
@@ -24,6 +25,7 @@ struct singleE
 	string key;	// this is for the counter key name
 	string value;	//this is for the counter key value
 	string s_value;
+	void* location;
 };
 
 singleE buffer[10000];
@@ -62,6 +64,10 @@ void trace_event_start(string  name, string categories, string arguments)
 	part.tid = 1;
 	part.ts = chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
 	part.arg = arguments;
+	if(i >= 9999)
+	{
+		trace_flush();
+	}
 	buffer[i] = part;
 	i++;
 }
@@ -74,6 +80,10 @@ void trace_event_end(string arguements)
 	part2.tid = 1;
 	part2.ts = chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
 	part2.arg = arguements;
+	if(i >= 9999)
+	{
+		trace_flush();
+	}
 	buffer[i] = part2;
 	i++;
 }
@@ -88,6 +98,12 @@ void trace_counter(string name, string key1, string value1)
 	part3.ts = chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
 	part3.key = key1;
 	part3.value = value1;
+	if(i >= 9999)
+	{
+		trace_flush();
+	}
+	buffer[i] = part3;
+	i++;
 }
 
 void trace_intstant_global(string name)
@@ -99,6 +115,46 @@ void trace_intstant_global(string name)
 	part4.tid = 1;
 	part4.ts = chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
 	part4.s_value = "g";
+	if(i >= 9999)
+	{
+		trace_flush();
+	}
+	buffer[i] = part4;
+	i++;
+}
+
+void trace_object_new(string name, void* obj_pointer)
+{
+	singleE part5;
+	part5.nameE = name;
+	part5.ph = "N";
+	part5.pid = 1;
+	part5.tid = 1;
+	part5.ts = chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
+	part5.location = obj_pointer;
+	if(i >= 9999)
+	{
+		trace_flush();
+	}
+	buffer[i] = part5;
+	i++;
+}
+
+void trace_object_gone(string name, void* obj_pointer)
+{
+	singleE part6;
+	part6.nameE = name;
+	part6.ph = "D";
+	part6.pid = 1;
+	part6.tid = 1;
+	part6.ts = chrono::duration_cast<chrono::milliseconds>(chrono::high_resolution_clock::now().time_since_epoch()).count();
+	part6.location = obj_pointer;
+	if(i >= 9999)
+	{
+		trace_flush();
+	}
+	buffer[i] = part6;
+	i++;
 }
 
 void printsingleE()
@@ -135,7 +191,7 @@ void printsingleE()
 			}
 			fileoutput << endl;
 		}
-		else if temp.ph == "i"
+		else if (temp.ph == "i")
 		{
 			fileoutput << "{\"name\": \"" << temp.nameE << "\",\"ph\": \"" << temp.ph << "\",";
 			fileoutput << "\"ts\":" << temp.ts << ", \"pid\":" << temp.pid << ",";
@@ -145,6 +201,17 @@ void printsingleE()
 				fileoutput << ",";
 			}
 			fileoutput << endl; 
+		}
+		else if (temp.ph == "N" || temp.ph == "D")
+		{
+			fileoutput << "{\"name\": \"" << temp.nameE <<"\", \"ph\": "<< temp.ph <<"\", \"id\": \"";
+			fileoutput << temp.location <<"\", \"ts\": "<<temp.ts<<", \"pid\": "<<temp.pid;
+			fileoutput << ", \"tid\": "<<temp.tid<<"}";
+			if (k != i - 1)
+			{
+				fileoutput << ",";
+			}
+			fileoutput<< endl;
 		}
 	k++;
 	}
@@ -156,9 +223,12 @@ void trace_flush()
 }
 int main()
 {
+	int x =1;
 	trace_start("output.txt");
 	trace_event_start("Hello", "greeting", "bah humbug");
+	trace_object_new("test Object", &x);
 	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+	trace_object_gone("test Object", &x);
 	trace_event_end("bah humbug");
 	trace_end();
 	return 0;
