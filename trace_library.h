@@ -221,15 +221,3 @@ void trace_flush()
 {
 	printsingleE();
 }
-int main()
-{
-	int x =1;
-	trace_start("output.txt");
-	trace_event_start("Hello", "greeting", "bah humbug");
-	trace_object_new("test Object", &x);
-	std::this_thread::sleep_for(std::chrono::milliseconds(500));
-	trace_object_gone("test Object", &x);
-	trace_event_end("bah humbug");
-	trace_end();
-	return 0;
-}
